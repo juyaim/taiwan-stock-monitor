@@ -1,0 +1,31 @@
+name: Daily_Stock_Analysis
+
+on:
+  schedule:
+    # 每天台灣時間 15:30 執行 (UTC 07:30)
+    - cron: '30 7 * * *'
+  workflow_dispatch: # 讓你可以隨時點按鈕手動執行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Analysis
+        run: python main.py > report.txt  # 將結果存成 report.txt
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: stock-report
+          path: report.txt
