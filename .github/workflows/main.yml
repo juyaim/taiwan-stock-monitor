@@ -10,22 +10,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: 1. 複製專案代碼
+        uses: actions/checkout@v4  # 順便幫你升級到 v4 更穩定
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: 2. 設定 Python 環境
+        uses: actions/setup-python@v5  # 順便幫你升級到 v5
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: 3. 安裝搬貨工具 (yfinance 等)
+        run: |
+          pip install yfinance pandas
+          # 如果你有 requirements.txt，也可以用 pip install -r requirements.txt
 
-      - name: Run Analysis
-        run: python main.py > report.txt  # 將結果存成 report.txt
+      - name: 4. 執行 AI 分析師 V7.0
+        # 注意：這裡的 main.py 必須跟你 GitHub 上的檔案名稱一模一樣
+        run: python main.py > report.txt
 
-      - name: Upload Report
-        uses: actions/upload-artifact@v3
+      - name: 5. 上傳分析戰報 (解決報錯關鍵)
+        uses: actions/upload-artifact@v4  # <-- 這裡已經幫你改成最新的 v4 了
         with:
           name: stock-report
           path: report.txt
