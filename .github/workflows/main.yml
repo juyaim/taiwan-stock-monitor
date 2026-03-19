@@ -4,31 +4,39 @@ on:
   schedule:
     # 每天台灣時間 15:30 執行 (UTC 07:30)
     - cron: '30 7 * * *'
-  workflow_dispatch: # 讓你可以隨時點按鈕手動執行
+  workflow_dispatch:
+    inputs:
+      stock_id:
+        description: '請輸入要分析的台股代號 (如 2330)'
+        required: true
+        default: '2330'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. 複製專案代碼
-        uses: actions/checkout@v4  # 順便幫你升級到 v4 更穩定
+      - name: 1. 複製專案代碼 (進貨)
+        uses: actions/checkout@v4
 
-      - name: 2. 設定 Python 環境
-        uses: actions/setup-python@v5  # 順便幫你升級到 v5
+      - name: 2. 設定 Python 環境 (請店長)
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      - name: 3. 安裝搬貨工具 (yfinance 等)
+      - name: 3. 安裝搬貨工具 (安裝必要套件)
         run: |
           pip install yfinance pandas
-          # 如果你有 requirements.txt，也可以用 pip install -r requirements.txt
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: 4. 執行 AI 分析師 V7.0
-        # 注意：這裡的 main.py 必須跟你 GitHub 上的檔案名稱一模一樣
-        run: python main.py > report.txt
+      - name: 4. 執行 AI 分析師 (這步最關鍵)
+        # 這裡會判斷是「自動跑」還是「手動按」
+        # 如果是手動按，會用你輸入的代號；如果是自動跑，預設跑 2330 (或改為你想監控的)
+        run: |
+          STOCK=${{ github.event.inputs.stock_id || '2330' }}
+          python main.py $STOCK | tee report.txt
 
-      - name: 5. 上傳分析戰報 (解決報錯關鍵)
-        uses: actions/upload-artifact@v4  # <-- 這裡已經幫你改成最新的 v4 了
+      - name: 5. 存檔戰報 (方便下載)
+        uses: actions/upload-artifact@v4
         with:
-          name: stock-report
+          name: stock-report-${{ github.run_id }}
           path: report.txt
